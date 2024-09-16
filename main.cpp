@@ -1,27 +1,19 @@
 #include <iostream>
-#include <stdint.h>
+#include "Xorshift32.h"
 
-// Just taken from Wikipedia
-struct xorshift32_state {
-    uint32_t a;
-};
+// Do this one next https://en.wikipedia.org/wiki/Lagged_Fibonacci_generator
 
-/* The state must be initialized to non-zero */
-uint32_t xorshift32(struct xorshift32_state *state)
-{
-    /* Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs" */
-    uint32_t x = state->a;
-    x ^= x << 13;
-    x ^= x >> 17;
-    x ^= x << 5;
-    return state->a = x;
-}
 
 int main() {
-    xorshift32_state state1;
-    state1.a = 0x12345678;
+    Xorshift32 state1;
+    state1.init();
+    state1.print();
 
-    std::cout << state1.a << std::endl << xorshift32(&state1);
+    for (int i = 0; i < 100; i++) {
+        state1.shift();
+        state1.print();
+        std::cout << ", \t";
+    }
 
     return 0;
 }

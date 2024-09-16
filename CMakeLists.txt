@@ -3,4 +3,7 @@ project(PRNG)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(PRNG main.cpp)
+add_executable(PRNG main.cpp
+        Xorshift32.h
+        Generator.cpp
+        Generator.h)
