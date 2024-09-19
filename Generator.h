@@ -12,10 +12,10 @@
 //todo Make this an abstract class
 class Generator {
 protected:
-    int min = 0, max = 100;
+    int min = 0, max = 1000;
 public:
     void setRange(int min, int max) {
-        this->min = min;
+        this->min = min; 
         this->max = max;
     }
 
@@ -36,8 +36,9 @@ public:
 /// Marsaglia
 /// </summary>
 class Xorshift32 : Generator {
-    uint32_t a = time(nullptr);
 public:
+    uint32_t a = time(nullptr);
+
     void init() override {
         a = min + (a % (max - min + 1));
     }
@@ -51,6 +52,7 @@ public:
         x = min + (x % (max - min + 1));
 
         a = x;
+        // Add this result into the set of States
     }
 
     void print() override {
@@ -61,9 +63,9 @@ public:
 // https://en.wikipedia.org/wiki/Lagged_Fibonacci_generator
 // todo: change operator
 class LFG : Generator {
+public:
     uint32_t a = time(nullptr);
 
-public:
     enum usedOperator {
         ADD = 0,
         SUBTRACT,
@@ -96,6 +98,7 @@ public:
             case SUBTRACT:
                 a = j - k;
                 break;
+            //todo will multiply by 0 really fast
             case MULTIPLY:
                 a = j * k;
                 break;

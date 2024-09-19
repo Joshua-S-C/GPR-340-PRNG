@@ -4,4 +4,4 @@ project(PRNG)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(PRNG main.cpp
-        Generator.h)
+        Generator.h )
