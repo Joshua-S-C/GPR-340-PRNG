@@ -9,7 +9,6 @@
 #include <ctime>
 #include <chrono>
 
-//todo Make this an abstract class
 class Generator {
 protected:
     int min = 0, max = 1000;
@@ -19,13 +18,6 @@ public:
         this->max = max;
     }
 
-    //void loop(int iterations) {
-    //    for (int i = 0; i < iterations; i++) {
-    //        shift();
-    //        print();
-    //    }
-    //}
-
     virtual void init() = 0;
     virtual void shift() = 0;
     virtual void print() = 0;
@@ -33,13 +25,14 @@ public:
 
 
 /// <summary>
-/// Marsaglia
+/// https://en.wikipedia.org/wiki/Xorshift
 /// </summary>
 class Xorshift32 : Generator {
 public:
-    uint32_t a = time(nullptr);
+    uint32_t a;
 
     void init() override {
+        a = time(nullptr);
         a = min + (a % (max - min + 1));
     }
 
@@ -52,7 +45,6 @@ public:
         x = min + (x % (max - min + 1));
 
         a = x;
-        // Add this result into the set of States
     }
 
     void print() override {
@@ -60,34 +52,61 @@ public:
     }
 };
 
-// https://en.wikipedia.org/wiki/Lagged_Fibonacci_generator
-// todo: change operator
+
+/// <summary>
+/// https://en.wikipedia.org/wiki/Lagged_Fibonacci_generator
+/// </summary>
 class LFG : Generator {
 public:
-    uint32_t a = time(nullptr);
-
     enum usedOperator {
         ADD = 0,
-        SUBTRACT,
-        MULTIPLY,
-        DIVIDE,
-        MOD,
-        XOR
+        SUBTRACT = 1,
+        MULTIPLY = 2,
+        DIVIDE = 3,
+        MOD = 4,
+        XOR = 5
     };
 
-    usedOperator op = ADD;
+    usedOperator op;
+    std::string opName;
 
-    uint32_t j, k; // Previous 2 numbers
+    uint32_t a;
+    uint32_t j; // Previous number
+    uint32_t k; // Second previous number
 
-    /// <param name="j">Previous number</param>
-    /// <param name="k">Second previous number</param>
-    LFG(uint32_t j, uint32_t k) {
-        this->j = j;
-        this->k = k;
-    }
-
+    /// <summary>
+    /// Initializes the previous two numbers (since they wouldn't exist)
+    /// TODO Use the range
+    /// </summary>
     void init() override {
-        a = min + (a % (max - min + 1));
+        j = 24;
+        k = 55;
+        op = ADD;
+
+        switch (op)
+        {
+        case LFG::ADD:
+            opName = "Add";
+            break;
+        case LFG::SUBTRACT:
+            opName = "Subtract";
+            break;
+        case LFG::MULTIPLY:
+            opName = "Multiply";
+            break;
+        case LFG::DIVIDE:
+            opName = "Divide";
+            break;
+        case LFG::MOD:
+            opName = "Mod";
+            break;
+        case LFG::XOR:
+            opName = "Xor";
+            break;
+        }
+
+        a = time(nullptr);
+        //a = min + (a % (max - min + 1));
     }
 
     void shift() override {
@@ -116,6 +135,8 @@ public:
             default:
                 std::cout << "Achievement Unlocked: How did we get here?";
         }
+
+        //a = min + (a % (max - min + 1));
 
         k = j;
         j = a;

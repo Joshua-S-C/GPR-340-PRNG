@@ -1,17 +1,29 @@
+// Joshua Sinclair Chong
+
 #include <iostream>
 #include <unordered_map>
 #include "Generator.h"
 
 int main() {
-    int iterations = 1000;
+#pragma region Init
+    // Edit Generator.h to mess with params
+    
+    int iterations = 1000000;
 
-#pragma region XOR Shift
-    // Marsaglia
-    std::cout << "[Xorshift]\n";
-    std::unordered_map<int, size_t> xorStates;
-
+    std::unordered_map<uint32_t, size_t> xorStates;
+    xorStates.clear();
     Xorshift32 xorShift;
     xorShift.init();
+
+    std::unordered_map<uint32_t, size_t> lfgStates;
+    lfgStates.clear();
+    LFG lfg;
+    lfg.init();
+
+#pragma endregion
+
+#pragma region XOR Shift
+    std::cout << "[Xorshift]\n";
     xorShift.print();
 
     for (int i = 0; i < iterations; i++) {
@@ -33,12 +45,7 @@ int main() {
 #pragma endregion
 
 #pragma region Lagged Fibonacci Generator
-    std::cout << "\n\n[Lagged Fibonacci]\n";
-    std::unordered_map<int, size_t> lfgStates;
-
-    LFG lfg(24, 55);
-    lfg.op = lfg.ADD;
-    lfg.init();
+    std::cout << "\n\n[" + lfg.opName + " Lagged Fibonacci]\n";
     lfg.print();
 
     for (int i = 0; i < iterations; i++) {
@@ -55,7 +62,7 @@ int main() {
         lfgStates.insert({ lfg.a, i });
 
         lfg.shift();
-        lfg.print();
+        //lfg.print();  // I am getting cycles of 168K when not using a Range
     }
 #pragma endregion
 
