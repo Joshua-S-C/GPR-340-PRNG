@@ -13,9 +13,18 @@
 /// Just a base class
 /// </summary>
 struct Generator {
-    int min = 0, max = -1; // Clamps numbers to this range. Use -1 as Max to ignore clamping
+    // Clamps numbers to this range. Use -1 as Max to ignore clamping
+    int min = 0, max = -1; 
 
     uint16_t a; // Value
+
+    /// <summary>
+    /// Seeds value to time
+    /// </summary>
+    void init() {
+        a = time(nullptr);
+        clamp();
+    }
 
     void setRange(int min, int max) {
         this->min = min; 
@@ -36,14 +45,6 @@ struct Generator {
         std::cout << a << ", \t";
     }
 
-    /// <summary>
-    /// Seeds value to time
-    /// </summary>
-    void init() {
-        a = time(nullptr);
-        clamp();
-    }
-
     virtual void shift() = 0;
 };
 
@@ -55,9 +56,10 @@ struct Xorshift : Generator {
     void shift() override {
         uint16_t x = a;
 
-        x ^= x << 13;
-        x ^= x >> 17;
-        x ^= x << 5;
+        // Maximum period combo
+        x ^= x << 7;
+        x ^= x >> 9;
+        x ^= x << 8;
 
         a = x;
 
@@ -69,7 +71,7 @@ struct Xorshift : Generator {
 /// <summary>
 /// https://en.wikipedia.org/wiki/Lagged_Fibonacci_generator
 /// I'm getting cycles of 168K with Int32, Addition, and no Range
-///     Another implementation tracks more than just the previous 2 numbers, then takes does the operator on to different indices that can be further apart.
+/// Another implementation tracks more than just the previous 2 numbers, then takes does the operator on to different indices that can be further apart.
 /// </summary>
 struct LFG : Generator {
     enum usedOperator {
@@ -94,8 +96,9 @@ struct LFG : Generator {
         // Change These
         j = 7;
         k = 10;
-        op = ADD;
+        op = ADD    ;
 
+        // Just setting the name for display
         switch (op)
         {
         case LFG::ADD:

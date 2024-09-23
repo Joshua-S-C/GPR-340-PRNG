@@ -12,7 +12,7 @@ void warmupEndMessage(Generator* gen, StatesMap* states, int i) {
     std::cout << "\nDuped Number: " << gen->a;
     std::cout << "\tDuped Index: " << i;
     std::cout << "\tWarmup: " << foundIndex;
-    std::cout << "\tCycle Length: " << i - foundIndex;
+    std::cout << "\tPeriod: " << i - foundIndex;
 }
 
 int main() {
@@ -30,7 +30,6 @@ int main() {
     lfgStates.clear();
     LFG lfg;
     lfg.init();
-
 #pragma endregion
 
 #pragma region XOR Shift
@@ -46,7 +45,7 @@ int main() {
         xorStates.insert({ xorShift.a, i });
 
         xorShift.shift();
-        xorShift.print();
+        //xorShift.print();
     }
 #pragma endregion
 
