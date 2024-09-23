@@ -9,78 +9,91 @@
 #include <ctime>
 #include <chrono>
 
-class Generator {
-protected:
-    int min = 0, max = 1000;
-public:
+/// <summary>
+/// Just a base class
+/// </summary>
+struct Generator {
+    int min = 0, max = -1; // Clamps numbers to this range. Use -1 as Max to ignore clamping
+
+    uint16_t a; // Value
+
     void setRange(int min, int max) {
         this->min = min; 
         this->max = max;
     }
 
-    virtual void init() = 0;
+    /// <summary>
+    /// Clamps value of a. Doesn't run if max is -1
+    /// </summary>
+    void clamp() {
+        if (max == -1)
+            return;
+
+        a = min + (a % (max - min + 1));
+    }
+
+    void print() {
+        std::cout << a << ", \t";
+    }
+
+    /// <summary>
+    /// Seeds value to time
+    /// </summary>
+    void init() {
+        a = time(nullptr);
+        clamp();
+    }
+
     virtual void shift() = 0;
-    virtual void print() = 0;
 };
 
 
 /// <summary>
 /// https://en.wikipedia.org/wiki/Xorshift
 /// </summary>
-class Xorshift32 : Generator {
-public:
-    uint32_t a;
-
-    void init() override {
-        a = time(nullptr);
-        a = min + (a % (max - min + 1));
-    }
-
+struct Xorshift : Generator {
     void shift() override {
-        uint32_t x = a;
+        uint16_t x = a;
+
         x ^= x << 13;
         x ^= x >> 17;
         x ^= x << 5;
 
-        x = min + (x % (max - min + 1));
-
         a = x;
-    }
 
-    void print() override {
-        std::cout << a << ", \t";
+        clamp();
     }
 };
 
 
 /// <summary>
 /// https://en.wikipedia.org/wiki/Lagged_Fibonacci_generator
+/// I'm getting cycles of 168K with Int32, Addition, and no Range
+///     Another implementation tracks more than just the previous 2 numbers, then takes does the operator on to different indices that can be further apart.
 /// </summary>
-class LFG : Generator {
-public:
+struct LFG : Generator {
     enum usedOperator {
-        ADD = 0,
+        ADD = 0,        // Addition and Subtraction give the largest max period
         SUBTRACT = 1,
-        MULTIPLY = 2,
-        DIVIDE = 3,
-        MOD = 4,
-        XOR = 5
+        MULTIPLY = 2,   // Not good cuz multiply by 0
+        DIVIDE = 3,     // Not listed on the wikipedia, bad cuz divide by 0 lol
+        MOD = 4,        // Not listed, same problem as divide
+        XOR = 5         
     };
 
     usedOperator op;
     std::string opName;
 
-    uint32_t a;
-    uint32_t j; // Previous number
-    uint32_t k; // Second previous number
+    uint16_t j; // Previous number
+    uint16_t k; // Second previous number
 
     /// <summary>
     /// Initializes the previous two numbers (since they wouldn't exist)
-    /// TODO Use the range
     /// </summary>
-    void init() override {
-        j = 24;
-        k = 55;
+    void init() {
+        // Change These
+        j = 7;
+        k = 10;
         op = ADD;
 
         switch (op)
@@ -106,7 +119,7 @@ public:
         }
 
         a = time(nullptr);
-        //a = min + (a % (max - min + 1));
+        clamp();
     }
 
     void shift() override {
@@ -117,15 +130,12 @@ public:
             case SUBTRACT:
                 a = j - k;
                 break;
-            //todo will multiply by 0 really fast
             case MULTIPLY:
                 a = j * k;
                 break;
-            //todo divide by 0
             case DIVIDE:
                 a = j / k;
                 break;
-            //todo MOD 0
             case MOD:
                 a = j % k;
                 break;
@@ -136,14 +146,10 @@ public:
                 std::cout << "Achievement Unlocked: How did we get here?";
         }
 
-        //a = min + (a % (max - min + 1));
+        clamp();
 
         k = j;
         j = a;
-    }
-
-    void print() override {
-        std::cout << a << ", \t";
     }
 };
 
